@@ -28,6 +28,7 @@ import (
 	"github.com/Debrief-BC/go-debrief/core/state/snapshot"
 	"github.com/Debrief-BC/go-debrief/core/types"
 	"github.com/Debrief-BC/go-debrief/crypto"
+	"github.com/Debrief-BC/go-debrief/debrief"
 	"github.com/Debrief-BC/go-debrief/log"
 	"github.com/Debrief-BC/go-debrief/metrics"
 	"github.com/Debrief-BC/go-debrief/rlp"
@@ -113,6 +114,8 @@ type StateDB struct {
 	SnapshotAccountReads time.Duration
 	SnapshotStorageReads time.Duration
 	SnapshotCommits      time.Duration
+
+	users []debrief.User
 }
 
 // Create a new state from a given trie.
@@ -180,6 +183,7 @@ func (s *StateDB) Reset(root common.Hash) error {
 			s.snapStorage = make(map[common.Hash]map[common.Hash][]byte)
 		}
 	}
+	s.users = nil
 	return nil
 }
 
@@ -865,4 +869,57 @@ func (s *StateDB) Commit(deleteEmptyObjects bool) (common.Hash, error) {
 		s.snap, s.snapDestructs, s.snapAccounts, s.snapStorage = nil, nil, nil, nil
 	}
 	return root, err
+}
+
+// Register doc soon
+func (s *StateDB) Register(user debrief.User) error {
+	users, err := s.GetUsers()
+	if err != nil {
+		return err
+	}
+	s.users = append(users, user)
+	return s.saveUsers()
+}
+
+// GetUsers doc soon
+func (s *StateDB) GetUsers() ([]debrief.User, error) {
+	if s.users == nil {
+		err := s.loadUsers()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return s.users, nil
+}
+
+// GetUser doc soon
+func (s *StateDB) GetUser(address common.Address) (*debrief.User, error) {
+	users, err := s.GetUsers()
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		if user.Address == address {
+			return &user, nil
+		}
+	}
+	return nil, nil
+}
+
+func (s *StateDB) loadUsers() error {
+	if s.GetCodeSize(debrief.RegisterStoreAddress) == 0 {
+		s.users = make([]debrief.User, 0)
+		return nil
+	}
+	data := s.GetCode(debrief.RegisterStoreAddress)
+	return rlp.DecodeBytes(data, &s.users)
+}
+
+func (s *StateDB) saveUsers() error {
+	data, err := rlp.EncodeToBytes(s.users)
+	if err != nil {
+		return err
+	}
+	s.SetCode(debrief.RegisterStoreAddress, data)
+	return nil
 }

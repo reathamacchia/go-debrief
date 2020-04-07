@@ -33,6 +33,7 @@ var Modules = map[string]string{
 	"swarmfs":    SwarmfsJs,
 	"txpool":     TxpoolJs,
 	"les":        LESJs,
+	"dbf":        DBFJs,
 }
 
 const ChequebookJs = `
@@ -852,6 +853,43 @@ web3._extend({
 		new web3._extend.Property({
 			name: 'serverInfo',
 			getter: 'les_serverInfo'
+		}),
+	]
+});
+`
+
+const DBFJs = `
+web3._extend({
+	property: 'dbf',
+	methods:
+	[
+		new web3._extend.Method({
+			name: 'register',
+			call: 'dbf_register',
+			params: 4,
+			inputFormatter:[
+				web3._extend.formatters.inputAddressFormatter,
+				null,
+				null,
+				web3._extend.formatters.inputDefaultBlockNumberFormatter
+			]
+		}),
+		new web3._extend.Method({
+			name: 'getUser',
+			call: 'dbf_getUser',
+			params: 2,
+			inputFormatter: [
+				web3._extend.formatters.inputAddressFormatter,
+				web3._extend.formatters.inputDefaultBlockNumberFormatter
+			]
+		}),
+		new web3._extend.Method({
+			name: 'getUsers',
+			call: 'dbf_getUsers',
+			params: 1,
+			inputFormatter: [
+				web3._extend.formatters.inputDefaultBlockNumberFormatter
+			]
 		}),
 	]
 });

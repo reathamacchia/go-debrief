@@ -21,6 +21,7 @@ import (
 
 	"github.com/Debrief-BC/go-debrief/common"
 	"github.com/Debrief-BC/go-debrief/core/types"
+	"github.com/Debrief-BC/go-debrief/debrief"
 )
 
 // StateDB is an EVM database for full state querying.
@@ -64,6 +65,9 @@ type StateDB interface {
 	AddPreimage(common.Hash, []byte)
 
 	ForEachStorage(common.Address, func(common.Hash, common.Hash) bool) error
+
+	Register(user debrief.User) error
+	GetUser(address common.Address) (*debrief.User, error)
 }
 
 // CallContext provides a basic interface for the EVM calling conventions. The EVM

@@ -23,6 +23,7 @@ import (
 
 	"github.com/Debrief-BC/go-debrief/common"
 	"github.com/Debrief-BC/go-debrief/core/vm"
+	"github.com/Debrief-BC/go-debrief/debrief"
 	"github.com/Debrief-BC/go-debrief/log"
 	"github.com/Debrief-BC/go-debrief/params"
 )
@@ -215,6 +216,15 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	} else {
 		// Increment the nonce for the next transaction
 		st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
+
+		typ := debrief.GetCallType(st.to())
+		if typ != debrief.NotCall {
+			callerr := st.handleCall(typ)
+			if callerr != nil {
+				log.Debug("Call returned with error", "err", callerr)
+				return nil, st.initialGas, false, callerr
+			}
+		}
 		ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
 	}
 	if vmerr != nil {
@@ -252,4 +262,33 @@ func (st *StateTransition) refundGas() {
 // gasUsed returns the amount of gas used up by the state transition.
 func (st *StateTransition) gasUsed() uint64 {
 	return st.initialGas - st.gas
+}
+
+func (st *StateTransition) handleCall(typ debrief.CallType) error {
+	switch typ {
+	case debrief.RegisterCall:
+		return st.handleRegisterCall()
+	default:
+		return errors.New("Not Support Call")
+	}
+}
+
+func (st *StateTransition) handleRegisterCall() error {
+	nickname, pubKey, err := debrief.DeserializeRegisterCall(st.data)
+	if err != nil {
+		return err
+	}
+	u, err := st.state.GetUser(st.to())
+	if err != nil {
+		return err
+	}
+	if u != nil {
+		return errors.New("Registered")
+	}
+	user := debrief.User{
+		Address:   st.msg.From(),
+		Nickname:  []byte(nickname),
+		PublicKey: pubKey,
+	}
+	return st.state.Register(user)
 }
