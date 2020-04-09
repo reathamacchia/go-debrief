@@ -21,7 +21,7 @@ import "github.com/Debrief-BC/go-debrief/common"
 // MainnetBootnodes are the enode URLs of the P2P bootstrap nodes running on
 // the main Debrief network.
 var MainnetBootnodes = []string{
-	"enode://3df5e2bc52991aa2e6739b7fcd08a6f32327d30cd1d2b236334d3be7e04685e82c8a4e4025e33dce0e7a484be16ec02823a3f45753b261af4fe1add2b7470dd6@54.196.216.49:50505", // bootnode-aws-ap-southeast-1-001
+	"enode://3df5e2bc52991aa2e6739b7fcd08a6f32327d30cd1d2b236334d3be7e04685e82c8a4e4025e33dce0e7a484be16ec02823a3f45753b261af4fe1add2b7470dd6@34.229.57.51:50505", // bootnode-aws-ap-southeast-1-001
 }
 
 // TestnetBootnodes are the enode URLs of the P2P bootstrap nodes running on the
