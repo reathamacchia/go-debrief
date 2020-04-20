@@ -1,5 +1,6 @@
-## Go Debrief
+# Go Debrief
 
+# About
 Official Golang implementation of the Debrief protocol.
 
 [![API Reference](
